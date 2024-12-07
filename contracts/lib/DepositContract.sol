@@ -71,17 +71,19 @@ contract DepositContract is ReentrancyGuardUpgradeable {
         }
 
         // Add deposit data root to Merkle tree (update a single `_branch` node)
-        uint256 size = ++depositCount;
-        for (
-            uint256 height = 0;
-            height < _DEPOSIT_CONTRACT_TREE_DEPTH;
-            height++
-        ) {
-            if (((size >> height) & 1) == 1) {
-                _branch[height] = node;
-                return;
+        unchecked {
+            uint256 size = ++depositCount;
+            for (
+                uint256 height = 0;
+                height < _DEPOSIT_CONTRACT_TREE_DEPTH;
+                height++
+            ) {
+                if (((size >> height) & 1) == 1) {
+                    _branch[height] = node;
+                    return;
+                }
+                node = keccak256(abi.encodePacked(_branch[height], node));
             }
-            node = keccak256(abi.encodePacked(_branch[height], node));
         }
         // As the loop should always end prematurely with the `return` statement,
         // this code should be unreachable. We assert `false` just to be safe.
